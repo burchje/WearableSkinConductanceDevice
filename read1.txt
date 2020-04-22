@@ -1,0 +1,57 @@
+%% Plot Skin conductance data from excel file on computer
+% Change startingFolder to own directory
+startingFolder = 'C:\Users\elija\OneDrive\Documents\VCU\EGRB';
+if ~exist(startingFolder, 'dir')
+  % If that folder doesn't exist, just start in the current folder.
+  startingFolder = pwd;
+end
+% Get the name of the file that the user wants to use.
+defaultFileName = fullfile(startingFolder, '*.*');
+[baseFileName, folder] = uigetfile(defaultFileName, 'Select a file');
+if baseFileName == 0
+  % User clicked the Cancel button.
+  return;
+end
+fullFileName = fullfile(folder, baseFileName);
+
+%% Convert time values
+[num,txt,raw] = xlsread(baseFileName);
+Time = num(1:end,1);
+Time = Time./1000; %Was in milliseconds
+Time = datetime(Time, 'convertfrom','posixtime');
+%% Convert GPIO values
+GPIO = num(1:end,2);
+Voltage = GPIO./1000; %Volts
+Current = .0000084; %Amps
+%Resistance = Voltage./Current; %Ohms
+Vcc = 3.0;
+
+%% Gets Resistance (Ohms)
+Resistance = zeros(length(Voltage),1);
+for i=1:length(Resistance)
+    x =(Voltage(i) + (0.5*Vcc))/Vcc;
+    Resistance(i) = (200000 *x)/(1-x);
+end
+
+%% Smooth Conductance Values to plot
+Conductance = 1000000./Resistance; %microSiemens
+SmoothC = smooth(Conductance);
+%% Time stamped values
+Stamp = num(1:end,4);
+StampValues = num(1:end,3);
+TimeStamps = StampValues(logical(Stamp));
+TimeStamps = datetime(TimeStamps, 'convertfrom','posixtime');
+
+%% Plot file
+figure(1)
+subplot(2,1,1);
+plot(Time,Conductance)
+xlabel('Date/Time');
+title('Raw Data') %Change title name here
+ylabel('Conductance (microSiemens)');
+
+subplot(2,1,2);
+plot(Time,SmoothC)
+xlabel('Date/Time');
+title('Filtered Data') %Change title name here
+ylabel('Conductance (microSiemens)');
