@@ -9,5 +9,8 @@ show a few samples of data collected from our group.
 Running the matlab code will prompt you to choose an 
 excel file to pull data from, and then graph it.
 
+The python files are for connecting the device to a
+computer and downloading the data as an excel file.
+
 Questions about the code or other aspects of the project 
 can be answered by reaching out to burchje@vcu.edu
